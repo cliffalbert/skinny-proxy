@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 BEGIN {
-($version) = '$Id: skinny-proxy.pl,v 1.47 2002/12/11 23:35:32 juerd Exp $'
+($version) = '$Id: skinny-proxy.pl,v 1.48 2003/05/19 00:03:05 tuxje Exp $'
   =~ /v (\S+)/;
 
 $debugMode = 1;
@@ -431,14 +431,21 @@ sub process_data {
 	if ($message eq 'CloseReceiveChannel') {
             my $pid = $calls{ $data{PassThruPartyID} };
 
-            print
-	      "Terminating UDP forward for call $data{PassThruPartyID}, pid " .
-	      "$pid with port $used_ports{$pid}"
-		unless $debugMode;
+	    if(defined $pid) {
+                print
+	          "Terminating UDP forward for call $data{PassThruPartyID}, pid " .
+	          "$pid with port $used_ports{$pid}"
+		    unless $debugMode;
         
-	    debug 'Killing UDP forwarder';
-	    debug { PID => $pid, Call => $data{PassThruPartyID} };
-            kill 15, $pid;
+	        debug 'Killing UDP forwarder';
+	        debug { PID => $pid, Call => $data{PassThruPartyID} };
+                kill 15, $pid;
+	    } else {
+                print
+	          "I want to terminate the UDP forward for call $data{PassThruPartyID}, " .
+		  "but I have no pid?!"
+		    unless $debugMode;
+	    }
 
 	    $do_text = 1;
         } elsif ($message eq 'StationRegisterReject') {
